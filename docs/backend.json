@@ -1,0 +1,485 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's profile in the system.",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID from Firebase Auth." },
+        "email": { "type": "string", "description": "The user's email address." },
+        "displayName": { "type": "string", "description": "The user's display name." }
+      },
+      "required": ["uid", "email"]
+    },
+    "Order": {
+      "title": "Order",
+      "type": "object",
+      "description": "Represents an order in the system.",
+      "properties": {
+        "orderNumber": { "type": "string", "description": "Human-readable identifier for the order." },
+        "clientId": { "type": "string", "description": "Reference to the Client who placed the order." },
+        "carId": { "type": "string", "description": "Reference to the Car associated with the order." },
+        "channel": { "type": "string", "enum": ["Сайт", "Витрина"], "description": "The sales channel for the order." },
+        "itemCount": { "type": "number", "description": "Total number of items in the order." },
+        "status": { "type": "string", "description": "The current status of the order (e.g., 'Paid', 'Overdue')." },
+        "statusAmount": { "type": "number", "description": "Amount associated with the status (e.g., debt amount)." },
+        "total": { "type": "number", "description": "The total cost of the order." },
+        "amountPaid": { "type": "number", "description": "The amount paid for the order." },
+        "amountRemaining": { "type": "number", "description": "The remaining amount to be paid for the order." },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/entities/Product" }
+        },
+        "paymentHistory": {
+          "type": "array",
+          "items": { "$ref": "#/entities/Payment" }
+        },
+        "comments": { "type": "string", "description": "Additional comments about the order." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when the order was created." },
+        "active": { "type": "boolean", "description": "Whether the order is active or archived." }
+      },
+      "required": ["orderNumber", "clientId", "itemCount", "status", "total", "items", "createdAt"]
+    },
+    "CustomerRequest": {
+        "title": "Customer Request",
+        "type": "object",
+        "description": "Represents a customer's request for parts pricing and availability.",
+        "properties": {
+            "clientId": { "type": "string", "description": "The ID of the client making the request." },
+            "carId": { "type": "string", "description": "The ID of the car associated with the request." },
+            "requestText": { "type": "string", "description": "The original, unprocessed text of the customer's request." },
+            "requestSummary": { "type": "string", "description": "A summarized version of the customer request."},
+            "vin": { "type": "string", "description": "VIN of the car for accurate part lookup." },
+            "status": { "type": "string", "enum": ["Новый", "В работе", "Ожидает ответа", "Готов", "Закрыт"], "description": "The current status of the request." },
+            "managerId": { "type": "string", "description": "The ID of the user managing the request." },
+            "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when the request was created." },
+            "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp when the request was last updated." },
+            "proposals": {
+                "type": "array",
+                "items": { "$ref": "#/entities/Offer" }
+            }
+        },
+        "required": ["clientId", "requestText", "status", "createdAt", "updatedAt"]
+    },
+    "Offer": {
+        "title": "Offer",
+        "type": "object",
+        "description": "Represents a single offered part within a customer request.",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the offer within the request." },
+            "name": { "type": "string", "description": "The name of the offered part." },
+            "article": { "type": "string", "description": "The part number or article." },
+            "manufacturer": { "type": "string", "description": "The brand or manufacturer of the part." },
+            "supplier": { "type": "string", "description": "The supplier of the part." },
+            "price": { "type": "number", "description": "The selling price for the client." },
+            "purchasePrice": { "type": "number", "description": "The purchase price from the supplier." },
+            "quantity": { "type": "number", "description": "The quantity of the part being offered." },
+            "term": { "type": "string", "description": "The estimated delivery time (e.g., '1-2 дня')." },
+            "notes": { "type": "string", "description": "Notes from the manager for the client." },
+            "status": { "type": "string", "enum": ["Предложен", "Выбран клиентом", "Отклонен"], "description": "The status of the offer." }
+        },
+        "required": ["id", "name", "price", "quantity", "term", "status"]
+    },
+    "Client": {
+      "title": "Client",
+      "type": "object",
+      "description": "Represents a client placing orders.",
+      "properties": {
+        "firstName": { "type": "string", "description": "First name of the client." },
+        "lastName": { "type": "string", "description": "Last name of the client." },
+        "patronymic": { "type": "string", "description": "Patronymic of the client." },
+        "email": { "type": "string", "description": "Email of the client." },
+        "phone": { "type": "string", "description": "Phone number of the client." },
+        "balance": { "type": "number", "description": "The client's current account balance." },
+        "source": { "type": "string", "description": "How the client found out about the service." },
+        "comments": { "type": "string", "description": "Additional comments about the client." },
+        "active": { "type": "boolean", "description": "Whether the client is active or not." }
+      },
+      "required": ["firstName", "lastName", "active"]
+    },
+    "Product": {
+      "title": "Product",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "article": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "supplier": { "type": "string" },
+        "price": { "type": "number" },
+        "quantity": { "type": "number" },
+        "total": { "type": "number" },
+        "purchase": { "type": "number" },
+        "markup": { "type": "number" },
+        "term": { "type": "number" },
+        "status": { "type": "string", "description": "The name of the status, referencing an ItemStatus document." },
+        "warehouseCell": { "type": "string", "description": "The warehouse cell where the item is stored." },
+        "categoryId": { "type": "string", "description": "Reference to the ProductCategory." },
+        "receivedAt": { "type": "string", "format": "date-time", "description": "Timestamp when the item was received." }
+      }
+    },
+    "ProductCategory": {
+        "title": "Product Category",
+        "type": "object",
+        "description": "Represents a category for a product.",
+        "properties": {
+            "name": { "type": "string" },
+            "parent": { "type": "string", "description": "ID of the parent category for nesting."}
+        },
+        "required": ["name"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "type": "object",
+      "properties": {
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Car": {
+      "title": "Car",
+      "type": "object",
+      "description": "Represents a client's car.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the car." },
+        "clientId": { "type": "string", "description": "The ID of the client who owns the car." },
+        "make": { "type": "string", "description": "Make of the car (e.g., Toyota)." },
+        "model": { "type": "string", "description": "Model of the car (e.g., Camry)." },
+        "year": { "type": "number", "description": "Year of manufacture." },
+        "vin": { "type": "string", "description": "Vehicle Identification Number." },
+        "active": { "type": "boolean", "description": "Whether the car is active or not." },
+        "comments": { "type": "string", "description": "Additional comments about the car." }
+      },
+      "required": ["make", "model", "clientId", "active"]
+    },
+    "OrderStatus": {
+      "title": "Order Status",
+      "type": "object",
+      "description": "Represents a configurable status for an order.",
+      "properties": {
+        "name": { "type": "string", "description": "The display name of the status." },
+        "color": { "type": "string", "description": "The background color for the status badge." },
+        "triggerStatusId": { "type": "string", "description": "The ID of the ItemStatus that triggers this order status." },
+        "order": { "type": "number", "description": "The sort order of the status." }
+      },
+      "required": ["name", "color"]
+    },
+    "PaymentStatus": {
+      "title": "Payment Status",
+      "type": "object",
+      "description": "Represents a configurable status for a payment.",
+      "properties": {
+        "name": { "type": "string", "description": "The display name of the status." },
+        "color": { "type": "string", "description": "The background color for the status badge." },
+        "order": { "type": "number", "description": "The sort order of the status." }
+      },
+      "required": ["name", "color"]
+    },
+     "ItemStatus": {
+      "title": "Item Status",
+      "type": "object",
+      "description": "Represents a configurable status for a product/item within an order.",
+      "properties": {
+        "name": { "type": "string", "description": "The display name of the status." },
+        "color": { "type": "string", "description": "The background color for the status indicator." },
+        "order": { "type": "number", "description": "The sort order of the status." }
+      },
+      "required": ["name", "color"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "type": "object",
+      "description": "Represents a supplier.",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the supplier." },
+        "login": { "type": "string", "description": "Login credential for the supplier's portal." },
+        "password": { "type": "string", "description": "Password for the supplier's portal." },
+        "url": { "type": "string", "description": "Website URL for the supplier." },
+        "apiEmail": { "type": "string", "description": "Email address for API requests." },
+        "orderDeadline": { "type": "string", "description": "The cut-off time for placing an order." },
+        "minOrderAmount": { "type": "number", "description": "The minimum order amount." },
+        "notes": { "type": "string", "description": "General notes or comments about the supplier." },
+        "manager": { "type": "string", "description": "The account manager for this supplier." }
+      },
+      "required": ["name"]
+    },
+    "StoreDetails": {
+      "title": "Store Details",
+      "type": "object",
+      "description": "Represents the details of the seller's store.",
+      "properties": {
+        "name": { "type": "string", "description": "Store name." },
+        "address": { "type": "string", "description": "Store address." },
+        "email": { "type": "string", "description": "Primary contact email." },
+        "phone1": { "type": "string", "description": "Primary phone number." },
+        "telegram": { "type": "string", "description": "Telegram username." },
+        "whatsapp": { "type": "string", "description": "WhatsApp number." },
+        "vkontakte": { "type": "string", "description": "VKontakte profile URL." },
+        "legalName": { "type": "string", "description": "Legal name of the entity." },
+        "generalDirector": { "type": "string", "description": "Full name of the General Director." },
+        "chiefAccountant": { "type": "string", "description": "Full name of the Chief Accountant." },
+        "tin": { "type": "string", "description": "Taxpayer Identification Number." },
+        "trrc": { "type": "string", "description": "Tax Registration Reason Code." },
+        "psrn": { "type": "string", "description": "Primary State Registration Number." },
+        "okpo": { "type": "string", "description": "All-Russian Classifier of Enterprises and Organizations." },
+        "registrationAddress": { "type": "string", "description": "Legal registration address." },
+        "actualAddress": { "type": "string", "description": "Actual physical address." },
+        "postalCode": { "type": "string", "description": "Postal code." },
+        "postalAddress": { "type": "string", "description": "Full postal address." },
+        "bankName": { "type": "string", "description": "Name of the bank." },
+        "bankBik": { "type": "string", "description": "BIK of the bank." },
+        "bankSettlementAccount": { "type": "string", "description": "Settlement account of the bank." },
+        "bankCorrespondentAccount": { "type": "string", "description": "Correspondent account of the bank." },
+        "withNds": { "type": "boolean", "description": "Whether the store works with NDS." },
+        "docBasis": { "type": "string", "description": "Basis for the sales receipt document." },
+        "docSellerSignature": { "type": "string", "description": "Text for the seller's signature line in documents." },
+        "docBuyerSignature": { "type": "string", "description": "Text for the buyer's signature line in documents." },
+        "docPromoText": { "type": "string", "description": "Text for promotions or additional information in documents." }
+      }
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "type": "object",
+      "description": "Represents a single financial transaction.",
+      "properties": {
+        "date": { "type": "string", "format": "date-time", "description": "The date and time of the transaction." },
+        "description": { "type": "string", "description": "A brief description of the transaction." },
+        "amount": { "type": "number", "description": "The amount of the transaction. Positive for income, negative for expenses." },
+        "type": { "type": "string", "enum": ["income", "expense", "return", "transfer"], "description": "The type of transaction." },
+        "categoryId": { "type": "string", "description": "The ID of the transaction category." },
+        "paymentMethodId": { "type": "string", "description": "The ID of the payment method." },
+        "orderId": { "type": "string", "description": "The ID of the associated order, if any." },
+        "clientId": { "type": "string", "description": "The ID of the associated client, if any." },
+        "supplierId": { "type": "string", "description": "The ID of the associated supplier, if any." }
+      },
+      "required": ["date", "description", "amount", "type", "categoryId", "paymentMethodId"]
+    },
+    "TransactionCategory": {
+      "title": "Transaction Category",
+      "type": "object",
+      "description": "Represents a category for financial transactions (e.g., Rent, Sales, Supplies).",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the category." },
+        "type": { "type": "string", "enum": ["income", "expense"], "description": "Whether this category is for income or expenses." }
+      },
+      "required": ["name", "type"]
+    },
+    "PaymentMethod": {
+      "title": "Payment Method",
+      "type": "object",
+      "description": "Represents a method of payment (e.g., Cash, Credit Card).",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the payment method." },
+        "commission": { "type": "number", "description": "The commission percentage for this payment method." },
+        "isDefault": { "type": "boolean", "description": "Whether this is the default payment method." }
+      },
+      "required": ["name"]
+    },
+    "KanbanColumn": {
+        "title": "Kanban Column",
+        "type": "object",
+        "description": "Represents a column in the Kanban board.",
+        "properties": {
+            "title": { "type": "string", "description": "The title of the column." },
+            "color": { "type": "string", "description": "The background color of the column." },
+            "order": { "type": "number", "description": "The sort order of the column." }
+        },
+        "required": ["title", "color", "order"]
+    },
+    "KanbanTask": {
+        "title": "Kanban Task",
+        "type": "object",
+        "description": "Represents a task card in the Kanban board.",
+        "properties": {
+            "columnId": { "type": "string", "description": "The ID of the column this task belongs to." },
+            "content": { "type": "string", "description": "The content/text of the task." },
+            "order": { "type": "number", "description": "The sort order of the task within its column." }
+        },
+        "required": ["columnId", "content", "order"]
+    },
+    "Deal": {
+      "title": "Deal",
+      "type": "object",
+      "description": "A single task or to-do item.",
+      "properties": {
+        "title": { "type": "string" },
+        "status": { "type": "string", "enum": ["someday", "logbook"], "description": "Used for non-dated states like Someday or Logbook." },
+        "when": { "type": "string", "format": "date-time", "description": "A specific date for the task, used for 'Today' and 'Plans'." },
+        "completed": { "type": "boolean", "default": false },
+        "notes": { "type": "string" },
+        "checklist": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "text": { "type": "string" },
+              "completed": { "type": "boolean" }
+            },
+             "required": ["id", "text", "completed"]
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "An array of DealTag IDs."
+        },
+        "listId": { "type": "string" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title"]
+    },
+    "DealList": {
+      "title": "Deal List",
+      "type": "object",
+      "description": "A list or project that contains deals.",
+      "properties": {
+        "name": { "type": "string" },
+        "notes": { "type": "string" },
+        "order": { "type": "number" },
+        "icon": { "type": "string", "description": "Lucide icon name for the list." }
+      },
+      "required": ["name"]
+    },
+    "DealTag": {
+      "title": "Deal Tag",
+      "type": "object",
+      "description": "A tag that can be applied to deals.",
+      "properties": {
+        "name": { "type": "string" },
+        "color": { "type": "string", "description": "A hex color code for the tag." }
+      },
+      "required": ["name", "color"]
+    },
+     "Receiving": {
+      "title": "Receiving",
+      "type": "object",
+      "description": "Represents an item being received.",
+      "properties": {
+        "orderId": { "type": "string" },
+        "productId": { "type": "string" },
+        "quantityReceived": { "type": "number" }
+      }
+    },
+    "WarehouseCell": {
+      "title": "Warehouse Cell",
+      "type": "object",
+      "description": "Represents a physical storage location in the warehouse.",
+      "properties": {
+        "name": { "type": "string", "description": "The unique name or code of the cell (e.g., A-01-B)." },
+        "notes": { "type": "string", "description": "Additional notes about the cell (e.g., 'For oversized items')." }
+      },
+      "required": ["name"]
+    },
+    "MarkupRule": {
+        "title": "Markup Rule",
+        "type": "object",
+        "description": "Represents a rule for calculating sales price based on purchase price.",
+        "properties": {
+            "from": { "type": "number", "description": "The lower bound of the purchase price range." },
+            "to": { "type": "number", "description": "The upper bound of the purchase price range." },
+            "markup": { "type": "number", "description": "The markup percentage to apply." }
+        },
+        "required": ["from", "to", "markup"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "users": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores user profile information. The document ID is the user's UID."
+    },
+    "clients": {
+      "schema": { "$ref": "#/entities/Client" },
+      "description": "Stores all client information. Accessible by authenticated users."
+    },
+    "orders": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Stores all order information. Accessible only by authenticated users."
+    },
+    "customerRequests": {
+        "schema": { "$ref": "#/entities/CustomerRequest" },
+        "description": "Stores all customer requests for part pricing and availability.",
+        "rules": "allow read, write: if request.auth != null;"
+    },
+    "cars": {
+      "schema": { "$ref": "#/entities/Car" },
+      "description": "Stores all car information. Accessible by authenticated users."
+    },
+    "orderStatuses": {
+      "schema": { "$ref": "#/entities/OrderStatus" },
+      "description": "Stores the user-configurable order statuses. Accessible by authenticated users."
+    },
+    "paymentStatuses": {
+      "schema": { "$ref": "#/entities/PaymentStatus" },
+      "description": "Stores the user-configurable payment statuses. Accessible by authenticated users."
+    },
+    "itemStatuses": {
+      "schema": { "$ref": "#/entities/ItemStatus" },
+      "description": "Stores the user-configurable item statuses. Readable by all authenticated users."
+    },
+    "productCategories": {
+      "schema": { "$ref": "#/entities/ProductCategory" },
+      "description": "Stores product categories."
+    },
+    "suppliers": {
+      "schema": { "$ref": "#/entities/Supplier" },
+      "description": "Stores supplier information."
+    },
+    "storeDetails": {
+      "schema": { "$ref": "#/entities/StoreDetails" },
+      "description": "Stores the details for the seller's store. Contains a single document with a known ID."
+    },
+    "transactions": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Stores all financial transactions."
+    },
+    "transactionCategories": {
+      "schema": { "$ref": "#/entities/TransactionCategory" },
+      "description": "Stores categories for financial transactions."
+    },
+    "paymentMethods": {
+      "schema": { "$ref": "#/entities/PaymentMethod" },
+      "description": "Stores available payment methods and their commissions."
+    },
+    "notesColumns": {
+        "schema": { "$ref": "#/entities/KanbanColumn" },
+        "description": "Stores the columns for the notes Kanban board."
+    },
+    "notesTasks": {
+        "schema": { "$ref": "#/entities/KanbanTask" },
+        "description": "Stores the tasks for the notes Kanban board."
+    },
+    "deals": {
+        "schema": { "$ref": "#/entities/Deal" },
+        "description": "Stores all the tasks (deals)."
+    },
+    "dealLists": {
+        "schema": { "$ref": "#/entities/DealList" },
+        "description": "Stores the lists/projects for deals."
+    },
+    "dealTags": {
+        "schema": { "$ref": "#/entities/DealTag" },
+        "description": "Stores all available tags for deals."
+    },
+     "receiving": {
+      "schema": { "$ref": "#/entities/Receiving" },
+      "description": "Stores items being received. Accessible by authenticated users."
+    },
+    "warehouseCells": {
+      "schema": { "$ref": "#/entities/WarehouseCell" },
+      "description": "Stores the warehouse cell locations. Accessible by authenticated users."
+    },
+    "markupRules": {
+        "schema": { "$ref": "#/entities/MarkupRule" },
+        "description": "Stores markup rules for pricing."
+    }
+  }
+}
+
+    
